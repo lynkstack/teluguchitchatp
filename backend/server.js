@@ -24,19 +24,19 @@ const io = new Server(server, {
   }
 });
 
-const supabase = require('./supabaseClient');
+const supabase = require('./supabaseClient.cjs');
 
 // Make io accessible in routes
 app.set('io', io);
 
 // Routes
-app.use('/api/users', require('./routes/user'));
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/messages', require('./routes/messages'));
-app.use('/api/media', require('./routes/media'));
-app.use('/api/groups', require('./routes/groups'));
-app.use('/api/ai', require('./routes/ai'));
-app.use('/api/version', require('./routes/version'));
+app.use('/api/users', require('./routes/user.cjs'));
+app.use('/api/auth', require('./routes/auth.cjs'));
+app.use('/api/messages', require('./routes/messages.cjs'));
+app.use('/api/media', require('./routes/media.cjs'));
+app.use('/api/groups', require('./routes/groups.cjs'));
+app.use('/api/ai', require('./routes/ai.cjs'));
+app.use('/api/version', require('./routes/version.cjs'));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Socket.io logic

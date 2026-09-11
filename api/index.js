@@ -1,6 +1,3 @@
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
-
 const express = require('express');
 const cors = require('cors');
 
@@ -13,7 +10,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// Load routes cleanly with explicit .cjs extensions
+// Load routes with explicit .cjs extensions
 const userRoute = require('../backend/routes/user.cjs');
 const authRoute = require('../backend/routes/auth.cjs');
 const messagesRoute = require('../backend/routes/messages.cjs');
@@ -23,7 +20,7 @@ const aiRoute = require('../backend/routes/ai.cjs');
 const versionRoute = require('../backend/routes/version.cjs');
 const supabase = require('../backend/supabaseClient.cjs');
 
-// Mock socket.io getter for serverless environment so socket calls don't throw
+// Mock socket.io getter for serverless environment
 app.set('io', {
   to: () => ({ emit: () => {} }),
   emit: () => {}
@@ -99,6 +96,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-export default function handler(req, res) {
-  return app(req, res);
-}
+module.exports = app;
