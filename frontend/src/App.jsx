@@ -20,6 +20,7 @@ import LanguageMenu from './components/LanguageMenu';
 import WelcomeScreen from './components/WelcomeScreen';
 import AiBotModal from './components/AiBotModal';
 import UpdatesModal from './components/UpdatesModal';
+import ChatsMenu from './components/ChatsMenu';
 import { Bot } from 'lucide-react';
 import { LanguageProvider } from './context/LanguageContext';
 import { useSettings } from './context/SettingsContext';
@@ -41,6 +42,7 @@ function App() {
   const [showAccount, setShowAccount] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showChats, setShowChats] = useState(false);
   const [showLanguage, setShowLanguage] = useState(false);
   const [showAiBot, setShowAiBot] = useState(false);
   const [showUpdatesModal, setShowUpdatesModal] = useState(false);
@@ -729,8 +731,15 @@ function App() {
               onOpenAccount={() => { setShowSettings(false); setShowAccount(true); }}
               onOpenNotifications={() => { setShowSettings(false); setShowNotifications(true); }}
               onOpenPrivacy={() => { setShowSettings(false); setShowPrivacy(true); }}
+              onOpenChats={() => { setShowSettings(false); setShowChats(true); }}
               onOpenLanguage={() => { setShowSettings(false); setShowLanguage(true); }}
               onCheckUpdate={() => { setShowSettings(false); setShowUpdatesModal(true); }}
+            />
+          )}
+
+          {showChats && (
+            <ChatsMenu
+              onClose={() => setShowChats(false)}
             />
           )}
 

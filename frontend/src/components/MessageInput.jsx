@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 import { Send, Image as ImageIcon, Smile, Sticker } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { encryptMessage } from '../utils/crypto';
@@ -115,8 +116,16 @@ const MessageInput = ({ socket, activeChat, isGroup, activeGroup, onInitiateCall
     }
   };
 
+  const { chatSettings } = useSettings();
+  const enterToSend = chatSettings?.enterToSend !== false;
+
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') handleSendText();
+    if (e.key === 'Enter' && !e.shiftKey) {
+      if (enterToSend) {
+        e.preventDefault();
+        handleSendText();
+      }
+    }
   };
 
   const handleImageClick = () => {

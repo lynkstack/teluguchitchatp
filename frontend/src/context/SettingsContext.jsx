@@ -22,12 +22,35 @@ export const SettingsProvider = ({ children }) => {
     }
   });
 
+  const [chatSettings, setChatSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem('appSettings_chats');
+      return saved ? JSON.parse(saved) : {
+        enterToSend: true,
+        mediaAutoDownload: true
+      };
+    } catch (e) {
+      return {
+        enterToSend: true,
+        mediaAutoDownload: true
+      };
+    }
+  });
+
   useEffect(() => {
     localStorage.setItem('appSettings_notifications', JSON.stringify(notifications));
   }, [notifications]);
 
+  useEffect(() => {
+    localStorage.setItem('appSettings_chats', JSON.stringify(chatSettings));
+  }, [chatSettings]);
+
   const updateNotificationSetting = (key, value) => {
     setNotifications(prev => ({ ...prev, [key]: value }));
+  };
+
+  const updateChatSetting = (key, value) => {
+    setChatSettings(prev => ({ ...prev, [key]: value }));
   };
 
   const playNotificationSound = (type) => {
@@ -49,7 +72,13 @@ export const SettingsProvider = ({ children }) => {
   };
 
   return (
-    <SettingsContext.Provider value={{ notifications, updateNotificationSetting, playNotificationSound }}>
+    <SettingsContext.Provider value={{ 
+      notifications, 
+      updateNotificationSetting, 
+      playNotificationSound,
+      chatSettings,
+      updateChatSetting
+    }}>
       {children}
     </SettingsContext.Provider>
   );

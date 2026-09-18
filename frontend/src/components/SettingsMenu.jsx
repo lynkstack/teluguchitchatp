@@ -1,7 +1,7 @@
 import React from 'react';
 import './SettingsMenu.css';
 
-function SettingsMenu({ onClose, onOpenAccount, onOpenNotifications, onOpenPrivacy, onOpenLanguage, onCheckUpdate }) {
+function SettingsMenu({ onClose, onOpenAccount, onOpenNotifications, onOpenPrivacy, onOpenChats, onOpenLanguage, onCheckUpdate }) {
   return (
     <div className="settings-modal-overlay" onClick={onClose}>
       <div className="settings-modal-content" onClick={e => e.stopPropagation()}>
@@ -25,8 +25,9 @@ function SettingsMenu({ onClose, onOpenAccount, onOpenNotifications, onOpenPriva
             <div className="settings-item-title">Privacy</div>
           </div>
           
-          <div className="settings-item">
+          <div className="settings-item" onClick={onOpenChats}>
             <div className="settings-item-title">Chats</div>
+            <div className="settings-item-subtitle">Theme, wallpaper, enter to send</div>
           </div>
           
           <div className="settings-item">
