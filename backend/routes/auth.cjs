@@ -31,6 +31,10 @@ router.post('/register', async (req, res) => {
   try {
     const { username, email, password, birthday, gender, country, age: providedAge } = req.body;
 
+    if (!process.env.SUPABASE_URL || (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_KEY)) {
+      return res.status(500).json({ msg: 'Database environment variables (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY) are missing on the deployment server.' });
+    }
+
     if (!email || !password) {
       return res.status(400).json({ msg: 'Please provide email and password.' });
     }
@@ -152,6 +156,10 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { loginId, password } = req.body;
+
+    if (!process.env.SUPABASE_URL || (!process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_KEY)) {
+      return res.status(500).json({ msg: 'Database environment variables (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY) are missing on the deployment server.' });
+    }
 
     if (!loginId || !password) {
       return res.status(400).json({ msg: 'Please enter your Email or User ID and Password.' });
