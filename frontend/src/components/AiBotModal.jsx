@@ -602,7 +602,8 @@ function AiBotModal({ onClose }) {
         position: 'fixed',
         inset: 0,
         width: '100vw',
-        height: '100vh',
+        height: '100dvh',
+        maxHeight: '100dvh',
         zIndex: 99999,
         background: '#0f172a',
         display: 'flex',
@@ -1077,7 +1078,7 @@ function AiBotModal({ onClose }) {
 
       {/* Pinned Bottom Input Bar & Multimodal Controls */}
       <div style={{
-        padding: '12px 20px 16px 20px',
+        padding: '10px 14px max(12px, env(safe-area-inset-bottom, 12px)) 14px',
         background: '#1e293b',
         borderTop: '1px solid rgba(255,255,255,0.08)',
         flexShrink: 0
