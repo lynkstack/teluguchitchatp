@@ -24,8 +24,9 @@ import { Bot } from 'lucide-react';
 import { LanguageProvider } from './context/LanguageContext';
 import { useSettings } from './context/SettingsContext';
 import { generateKeyPair, exportPublicKey, exportPrivateKey } from './utils/crypto';
+import realtimeSocket from './utils/realtimeBridge';
 
-const socket = io(import.meta.env.VITE_BACKEND_URL || '/');
+const socket = realtimeSocket;
 
 function App() {
   const { playNotificationSound } = useSettings();
@@ -105,6 +106,12 @@ function App() {
       localStorage.removeItem('user');
     }
   }, [token]);
+
+  useEffect(() => {
+    if (user) {
+      realtimeSocket.setCurrentUser(user);
+    }
+  }, [user]);
 
   useEffect(() => {
     // Supabase redirects use hash fragments (#access_token=...)

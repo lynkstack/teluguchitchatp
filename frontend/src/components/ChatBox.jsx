@@ -250,6 +250,41 @@ const ChatBox = ({
   const isOnline = activeChat === 'home' || activeGroup || (otherUser && checkIsUserOnline(otherUser.id));
   const otherIsOnline = otherUser ? checkIsUserOnline(otherUser.id) : false;
 
+  const addOrUpdateMessage = (prevList = [], newMsg) => {
+    if (!newMsg) return prevList;
+    if (newMsg.id) {
+      const existingIndex = prevList.findIndex(m => m.id === newMsg.id || (m.id && String(m.id).startsWith('temp_') && m.text === newMsg.text && m.senderId === newMsg.senderId));
+      if (existingIndex !== -1) {
+        const updated = [...prevList];
+        updated[existingIndex] = { ...updated[existingIndex], ...newMsg };
+        return updated;
+      }
+    }
+    if (newMsg.tempId) {
+      const existingIndex = prevList.findIndex(m => m.id === newMsg.tempId || m.tempId === newMsg.tempId);
+      if (existingIndex !== -1) {
+        const updated = [...prevList];
+        updated[existingIndex] = { ...updated[existingIndex], ...newMsg };
+        return updated;
+      }
+    }
+    const isDuplicate = prevList.some(m => 
+      m.senderId === newMsg.senderId && 
+      m.text === newMsg.text && 
+      Math.abs(new Date(m.timestamp || 0).getTime() - new Date(newMsg.timestamp || 0).getTime()) < 3000
+    );
+    if (isDuplicate) return prevList;
+    return [...prevList, newMsg];
+  };
+
+  const handleOptimisticMessage = (msg, chatKey) => {
+    setMessages(prev => {
+      const targetKey = chatKey || 'home';
+      const list = prev[targetKey] || [];
+      return { ...prev, [targetKey]: addOrUpdateMessage(list, msg) };
+    });
+  };
+
   useEffect(() => {
     const joinHome = () => {
       socket.emit('join_home');
@@ -263,7 +298,7 @@ const ChatBox = ({
     const receiveMessageHandler = (data) => {
       setMessages(prev => {
         const homeMsgs = prev['home'] || [];
-        return { ...prev, 'home': [...homeMsgs, data] };
+        return { ...prev, 'home': addOrUpdateMessage(homeMsgs, data) };
       });
     };
 
@@ -286,7 +321,7 @@ const ChatBox = ({
         }
         setMessages(prev => {
           const userMsgs = prev[otherId] || [];
-          return { ...prev, [otherId]: [...userMsgs, data] };
+          return { ...prev, [otherId]: addOrUpdateMessage(userMsgs, data) };
         });
       }
     };
@@ -298,7 +333,7 @@ const ChatBox = ({
     const receiveGroupHandler = (data) => {
       setMessages(prev => {
         const groupMsgs = prev[data.room] || [];
-        return { ...prev, [data.room]: [...groupMsgs, data] };
+        return { ...prev, [data.room]: addOrUpdateMessage(groupMsgs, data) };
       });
     };
 
@@ -811,6 +846,7 @@ const ChatBox = ({
             replyingTo={replyingTo} 
             onClearReply={() => setReplyingTo(null)} 
             otherUser={otherUser} 
+            onOptimisticMessage={handleOptimisticMessage}
           />
         </div>
       </div>

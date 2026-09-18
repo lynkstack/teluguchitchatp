@@ -26,7 +26,7 @@ const STICKERS = [
   'https://media.giphy.com/media/QvBoMEcQ7DQXK/giphy.gif'
 ];
 
-const MessageInput = ({ socket, activeChat, isGroup, activeGroup, onInitiateCall, replyingTo, onClearReply, otherUser }) => {
+const MessageInput = ({ socket, activeChat, isGroup, activeGroup, onInitiateCall, replyingTo, onClearReply, otherUser, onOptimisticMessage }) => {
   const { user, token } = useAuth();
   const [text, setText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -56,7 +56,11 @@ const MessageInput = ({ socket, activeChat, isGroup, activeGroup, onInitiateCall
       }
     }
 
+    const tempId = 'temp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+
     const baseData = {
+      id: tempId,
+      tempId,
       sender: user ? user.username : `Guest-${Math.floor(Math.random() * 1000)}`,
       timestamp: new Date().toISOString(),
       ...(replyingTo && { reply_to: replyingTo }),
@@ -85,20 +89,23 @@ const MessageInput = ({ socket, activeChat, isGroup, activeGroup, onInitiateCall
       recipientId
     };
 
-    // 1. Socket realtime emission
-    if (socket && socket.connected) {
+    // 1. Instant Optimistic UI Update for sender
+    if (onOptimisticMessage) {
+      onOptimisticMessage(payload, activeChat);
+    }
+
+    // 2. Realtime socket emission & broadcast
+    if (socket) {
       if (activeChat === 'home') {
         socket.emit('send_message', payload);
       } else if (isGroup) {
-        if (!user) return;
-        socket.emit('send_group_message', payload);
+        if (user) socket.emit('send_group_message', payload);
       } else {
-        if (!user) return;
-        socket.emit('send_private_message', payload);
+        if (user) socket.emit('send_private_message', payload);
       }
     }
 
-    // 2. HTTP POST fallback to guarantee persistence and delivery across all environments
+    // 3. HTTP POST to guarantee database persistence
     if (token && user && !room.startsWith('stranger_')) {
       axios.post('/api/messages', payload, {
         headers: { 'x-auth-token': token }
