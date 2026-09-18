@@ -216,6 +216,30 @@ function App() {
     };
   }, []);
 
+  // Resilient Heartbeat & Online Status Poller (guarantees online status in serverless/cloud environments)
+  useEffect(() => {
+    if (!token || !user) return;
+
+    const syncPresence = async () => {
+      try {
+        await axios.post('/api/users/heartbeat', {}, { headers: { 'x-auth-token': token } });
+        const res = await axios.get('/api/users/online', { headers: { 'x-auth-token': token } });
+        if (Array.isArray(res.data)) {
+          setOnlineUsers(prev => {
+            const next = new Set([...prev, ...res.data]);
+            return next;
+          });
+        }
+      } catch (e) {
+        // silent fallback
+      }
+    };
+
+    syncPresence();
+    const interval = setInterval(syncPresence, 8000);
+    return () => clearInterval(interval);
+  }, [token, user]);
+
   useEffect(() => {
     const handleIncomingCall = (data) => {
       console.log("Received call_incoming from", data.name);

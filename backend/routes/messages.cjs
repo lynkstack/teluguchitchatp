@@ -97,6 +97,69 @@ router.delete('/:room', auth, async (req, res) => {
     console.error(err.message);
     res.status(500).send('Server error');
   }
+// POST /api/messages - Send a message (works seamlessly with and without Socket.io)
+router.post('/', auth, async (req, res) => {
+  try {
+    const { room, text, recipientId, imageUrl, gifUrl, stickerUrl, fileUrl, fileType, reply_to, tempId } = req.body;
+    const senderId = req.user.id;
+
+    // Fetch sender username
+    const { data: senderUser } = await supabase
+      .from('users')
+      .select('username')
+      .eq('id', senderId)
+      .single();
+    
+    const senderUsername = senderUser?.username || 'User';
+
+    const msgData = {
+      room: room || (recipientId ? [senderId, recipientId].sort().join('_') : 'home_chat'),
+      sender: senderUsername,
+      senderId: senderId,
+      recipientId: recipientId || null,
+      text: text || '',
+      imageUrl: imageUrl || null,
+      gifUrl: gifUrl || null,
+      stickerUrl: stickerUrl || null,
+      fileUrl: fileUrl || null,
+      fileType: fileType || null
+    };
+
+    const { data: savedMsg, error } = await supabase
+      .from('messages')
+      .insert([msgData])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error saving message in DB:', error);
+      return res.status(500).json({ msg: 'Database error saving message: ' + error.message });
+    }
+
+    const fullMessage = {
+      ...savedMsg,
+      reply_to: reply_to || null,
+      tempId: tempId || null
+    };
+
+    // If socket.io is available, broadcast
+    const io = req.app.get('io');
+    if (io) {
+      if (msgData.room === 'home_chat') {
+        io.to('home_chat').emit('receive_message', fullMessage);
+      } else if (msgData.recipientId) {
+        io.to(msgData.room).emit('receive_private_message', fullMessage);
+        io.to(msgData.recipientId).emit('receive_private_message', fullMessage);
+      } else {
+        io.to(msgData.room).emit('receive_group_message', fullMessage);
+      }
+    }
+
+    res.status(201).json(fullMessage);
+  } catch (err) {
+    console.error('Message post error:', err);
+    res.status(500).json({ msg: 'Server error sending message' });
+  }
 });
 
 module.exports = router;

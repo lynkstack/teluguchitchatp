@@ -66,24 +66,44 @@ const MessageInput = ({ socket, activeChat, isGroup, activeGroup, onInitiateCall
 
     if (onClearReply) onClearReply();
 
+    let room = 'home_chat';
+    let recipientId = null;
     if (activeChat === 'home') {
-      socket.emit('send_message', baseData);
+      room = 'home_chat';
     } else if (isGroup) {
-      if (!user) return; // Guests can't send group messages
-      socket.emit('send_group_message', {
-        ...baseData,
-        room: activeChat,
-        senderId: user.id || user._id
-      });
+      room = activeChat;
     } else {
-      if (!user) return; // Guests can't send private messages
       const isStranger = activeChat.startsWith('stranger_');
-      const room = isStranger ? activeChat : [user.id || user._id, activeChat].sort().join('_');
-      socket.emit('send_private_message', {
-        ...baseData,
-        room,
-        senderId: user.id || user._id,
-        recipientId: activeChat
+      room = isStranger ? activeChat : [user?.id || user?._id, activeChat].sort().join('_');
+      recipientId = isStranger ? null : activeChat;
+    }
+
+    const payload = {
+      ...baseData,
+      room,
+      senderId: user?.id || user?._id,
+      recipientId
+    };
+
+    // 1. Socket realtime emission
+    if (socket && socket.connected) {
+      if (activeChat === 'home') {
+        socket.emit('send_message', payload);
+      } else if (isGroup) {
+        if (!user) return;
+        socket.emit('send_group_message', payload);
+      } else {
+        if (!user) return;
+        socket.emit('send_private_message', payload);
+      }
+    }
+
+    // 2. HTTP POST fallback to guarantee persistence and delivery across all environments
+    if (token && user && !room.startsWith('stranger_')) {
+      axios.post('/api/messages', payload, {
+        headers: { 'x-auth-token': token }
+      }).catch(err => {
+        console.warn('REST message delivery notice:', err.message);
       });
     }
   };

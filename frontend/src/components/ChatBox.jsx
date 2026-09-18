@@ -385,9 +385,11 @@ const ChatBox = ({
     };
 
     fetchHistory();
+    const pollInterval = setInterval(fetchHistory, 3500);
 
     return () => {
       socket.off('connect', joinPrivate);
+      clearInterval(pollInterval);
     };
   }, [activeChat, user, socket, token, activeGroup]);
 

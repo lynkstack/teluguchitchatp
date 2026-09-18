@@ -472,11 +472,37 @@ router.delete('/me', verifyToken, async (req, res) => {
       console.warn('Supabase Auth user delete error:', authDelErr);
     }
 
-    res.json({ msg: 'Account deleted successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server error');
+// Active users heartbeat map
+const activeHeartbeats = new Map();
+
+// POST /api/users/heartbeat
+router.post('/heartbeat', verifyToken, (req, res) => {
+  const userId = req.user.id;
+  activeHeartbeats.set(userId, Date.now());
+  res.json({ status: 'ok', online: true });
+});
+
+// GET /api/users/online
+router.get('/online', verifyToken, (req, res) => {
+  const now = Date.now();
+  const activeThreshold = 60 * 1000; // 60 seconds
+  const onlineList = [];
+  
+  for (const [uid, lastSeen] of activeHeartbeats.entries()) {
+    if (now - lastSeen < activeThreshold) {
+      onlineList.push(uid);
+    } else {
+      activeHeartbeats.delete(uid);
+    }
   }
+
+  // Include current user
+  if (req.user && !onlineList.includes(req.user.id)) {
+    onlineList.push(req.user.id);
+    activeHeartbeats.set(req.user.id, now);
+  }
+
+  res.json(onlineList);
 });
 
 module.exports = router;
