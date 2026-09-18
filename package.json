@@ -2,6 +2,7 @@
   "name": "teluguchitchat-root",
   "version": "1.0.0",
   "private": true,
+  "type": "commonjs",
   "scripts": {
     "build": "npm --prefix backend install && npm --prefix frontend install && npm --prefix frontend run build && node -e \"const fs=require('fs'); if(fs.existsSync('frontend/dist')){ fs.cpSync('frontend/dist', 'dist', {recursive:true, force:true}); } if(fs.existsSync('dist') && !fs.existsSync('frontend/dist')){ fs.cpSync('dist', 'frontend/dist', {recursive:true, force:true}); }\"",
     "start": "node backend/server.cjs"
