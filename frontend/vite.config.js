@@ -7,7 +7,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 export default defineConfig({
   plugins: [react(), basicSsl()],
   build: {
-    outDir: '../dist',
+    outDir: 'dist',
     emptyOutDir: true,
     chunkSizeWarningLimit: 1600,
     rollupOptions: {
