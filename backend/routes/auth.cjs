@@ -161,22 +161,39 @@ router.post('/login', async (req, res) => {
     const cleanPassword = String(password);
     const isEmail = cleanLoginId.includes('@');
 
-    // 1. Fetch user by email or username (case-insensitive) using limit(1) to avoid multi-row exceptions
-    let query = supabase.from('users').select('*');
+    // 1. Fetch user by email or username (case-insensitive)
+    let userProfile = null;
     if (isEmail) {
-      query = query.ilike('email', cleanLoginId);
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .ilike('email', cleanLoginId)
+        .limit(1);
+      if (!error && data && data.length > 0) {
+        userProfile = data[0];
+      }
     } else {
-      query = query.ilike('username', cleanLoginId);
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .ilike('username', cleanLoginId)
+        .limit(1);
+      if (!error && data && data.length > 0) {
+        userProfile = data[0];
+      }
     }
 
-    const { data: userProfiles, error: profileError } = await query.limit(1);
-
-    if (profileError) {
-      console.error('Supabase query error:', profileError);
-      return res.status(500).json({ msg: 'Database error querying account profile: ' + (profileError.message || '') });
+    // Fallback: search both fields if not found yet
+    if (!userProfile) {
+      const { data: fallbackUsers } = await supabase
+        .from('users')
+        .select('*')
+        .or(`email.ilike.${cleanLoginId},username.ilike.${cleanLoginId}`)
+        .limit(1);
+      if (fallbackUsers && fallbackUsers.length > 0) {
+        userProfile = fallbackUsers[0];
+      }
     }
-
-    let userProfile = userProfiles && userProfiles.length > 0 ? userProfiles[0] : null;
 
     // 2. If not found in public.users, check if user exists in Supabase auth.users
     if (!userProfile && isEmail) {
@@ -212,16 +229,23 @@ router.post('/login', async (req, res) => {
     let isMatch = false;
     if (userProfile.password && userProfile.password !== 'handled_by_supabase_auth' && userProfile.password !== 'handled_by_guest_auth') {
       try {
-        isMatch = await bcrypt.compare(cleanPassword, userProfile.password);
-        
-        if (!isMatch) {
-          isMatch = await bcrypt.compare(cleanPassword.toUpperCase(), userProfile.password);
-        }
-        if (!isMatch) {
-          isMatch = await bcrypt.compare(cleanPassword.toLowerCase(), userProfile.password);
-        }
-        if (!isMatch && cleanPassword.trim() !== cleanPassword) {
-          isMatch = await bcrypt.compare(cleanPassword.trim(), userProfile.password);
+        if (cleanPassword === userProfile.password) {
+          isMatch = true;
+          // Upgrade plain-text password to bcrypt hash
+          const salt = await bcrypt.genSalt(10);
+          const newHashed = await bcrypt.hash(cleanPassword, salt);
+          await supabase.from('users').update({ password: newHashed }).eq('id', userProfile.id);
+        } else {
+          isMatch = await bcrypt.compare(cleanPassword, userProfile.password);
+          if (!isMatch) {
+            isMatch = await bcrypt.compare(cleanPassword.toUpperCase(), userProfile.password);
+          }
+          if (!isMatch) {
+            isMatch = await bcrypt.compare(cleanPassword.toLowerCase(), userProfile.password);
+          }
+          if (!isMatch && cleanPassword.trim() !== cleanPassword) {
+            isMatch = await bcrypt.compare(cleanPassword.trim(), userProfile.password);
+          }
         }
       } catch (bcryptErr) {
         console.warn("Bcrypt comparison notice:", bcryptErr.message);
@@ -265,7 +289,12 @@ router.post('/login', async (req, res) => {
       user: { 
         id: userProfile.id, 
         username: userProfile.username, 
-        email: userProfile.email 
+        email: userProfile.email,
+        age: userProfile.age,
+        gender: userProfile.gender,
+        country: userProfile.country,
+        profileSongUrl: userProfile.profileSongUrl,
+        statusVideoUrl: userProfile.statusVideoUrl
       } 
     });
   } catch (err) {

@@ -636,10 +636,31 @@ function App() {
               onGuestLogin={() => { setShowLogin(false); setShowGuestLogin(true); }}
             />
           )}
-          {showRegister && <RegisterModal onClose={() => setShowRegister(false)} />}
-          {showGuestLogin && <GuestLoginModal onClose={() => setShowGuestLogin(false)} />}
-          {showForgotPassword && <ForgotPasswordModal onClose={() => setShowForgotPassword(false)} />}
-          {showResetPassword && <ResetPasswordModal token={resetToken} onClose={() => setShowResetPassword(false)} />}
+          {showRegister && (
+            <RegisterModal 
+              onClose={() => setShowRegister(false)} 
+              onBackToLogin={() => { setShowRegister(false); setShowLogin(true); }} 
+            />
+          )}
+          {showGuestLogin && (
+            <GuestLoginModal 
+              onClose={() => setShowGuestLogin(false)} 
+              onBackToLogin={() => { setShowGuestLogin(false); setShowLogin(true); }} 
+            />
+          )}
+          {showForgotPassword && (
+            <ForgotPasswordModal 
+              onClose={() => setShowForgotPassword(false)} 
+              onBackToLogin={() => { setShowForgotPassword(false); setShowLogin(true); }} 
+            />
+          )}
+          {showResetPassword && (
+            <ResetPasswordModal 
+              token={resetToken} 
+              onClose={() => setShowResetPassword(false)} 
+              onBackToLogin={() => { setShowResetPassword(false); setShowLogin(true); }} 
+            />
+          )}
 
           {showSettings && (
             <SettingsMenu
