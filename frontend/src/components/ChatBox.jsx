@@ -117,54 +117,60 @@ const MessageItem = memo(({ msg, isSelf, senderUser, senderColor, senderIcon, on
               {msg.reply_to.text && <div>{msg.reply_to.text.length > 30 ? msg.reply_to.text.substring(0,30)+'...' : msg.reply_to.text}</div>}
             </div>
           )}
-          {msg.text && <div className="message-text">{msg.text}</div>}
           
-          {msg.imageUrl && !msg.viewOnce && (
-            <img 
-              src={msg.imageUrl} 
-              alt="attached" 
-              className="message-img" 
-              onClick={() => onImageClick && onImageClick(msg.imageUrl)}
-            />
-          )}
-          
-          {msg.imageUrl && msg.viewOnce && !isSelf && (
-            <div className="view-once-container">
-              {isViewed ? (
-                <div className="viewed-notice" style={{ fontStyle: 'italic', color: '#888', fontSize: '0.85rem' }}>
-                  👁️ Photo Opened
-                </div>
-              ) : viewing ? (
-                <div className="viewing-container" style={{ position: 'relative' }}>
-                  <img src={msg.imageUrl} alt="view once" className="message-img" />
-                  <div className="timer-badge" style={{ position: 'absolute', top: 5, right: 5, background: 'rgba(0,0,0,0.6)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '0.8rem' }}>
-                    {timeLeft}s
+          <div className="message-body">
+            {msg.text && <div className="message-text">{msg.text}</div>}
+            
+            {msg.imageUrl && !msg.viewOnce && (
+              <img 
+                src={msg.imageUrl} 
+                alt="attached" 
+                className="message-img" 
+                onClick={() => onImageClick && onImageClick(msg.imageUrl)}
+              />
+            )}
+            
+            {msg.imageUrl && msg.viewOnce && !isSelf && (
+              <div className="view-once-container">
+                {isViewed ? (
+                  <div className="viewed-notice" style={{ fontStyle: 'italic', color: '#888', fontSize: '0.85rem' }}>
+                    👁️ Photo Opened
                   </div>
-                </div>
-              ) : (
-                <button 
-                  onClick={handleView}
-                  style={{ background: '#e91e63', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  Tap to View 📸
-                </button>
-              )}
-            </div>
-          )}
+                ) : viewing ? (
+                  <div className="viewing-container" style={{ position: 'relative' }}>
+                    <img src={msg.imageUrl} alt="view once" className="message-img" />
+                    <div className="timer-badge" style={{ position: 'absolute', top: 5, right: 5, background: 'rgba(0,0,0,0.6)', color: 'white', padding: '2px 8px', borderRadius: '10px', fontSize: '0.8rem' }}>
+                      {timeLeft}s
+                    </div>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={handleView}
+                    style={{ background: '#e91e63', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    Tap to View 📸
+                  </button>
+                )}
+              </div>
+            )}
 
-          {msg.imageUrl && msg.viewOnce && isSelf && (
-            <div className="viewed-notice" style={{ fontStyle: 'italic', color: '#888', fontSize: '0.85rem' }}>
-              👁️ View Once Photo Sent
-            </div>
-          )}
+            {msg.imageUrl && msg.viewOnce && isSelf && (
+              <div className="viewed-notice" style={{ fontStyle: 'italic', color: '#888', fontSize: '0.85rem' }}>
+                👁️ View Once Photo Sent
+              </div>
+            )}
 
-          {msg.gifUrl && <img src={msg.gifUrl} alt="gif" className="message-img" />}
-          {msg.stickerUrl && (
-            <img src={msg.stickerUrl} alt="sticker" className="message-img"
-              style={{ background: 'transparent', maxWidth: '150px' }} />
-          )}
+            {msg.gifUrl && <img src={msg.gifUrl} alt="gif" className="message-img" />}
+            {msg.stickerUrl && (
+              <img src={msg.stickerUrl} alt="sticker" className="message-img"
+                style={{ background: 'transparent', maxWidth: '150px' }} />
+            )}
+          </div>
+
           {!isSystemMsg && timeStr && (
-            <span className="message-time">{timeStr}</span>
+            <div className="message-meta">
+              <span className="message-time">{timeStr}</span>
+            </div>
           )}
         </div>
       </div>
