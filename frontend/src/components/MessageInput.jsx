@@ -195,6 +195,16 @@ const MessageInput = ({ socket, activeChat, isGroup, activeGroup, onInitiateCall
   return (
     <div className="input-area">
       <div className="input-wrapper">
+        <button 
+          type="button"
+          className="action-btn-inline" 
+          disabled={!user} 
+          onClick={handleEmojiToggle}
+          title={!user ? "Login to send Emojis" : "Emoji"}
+        >
+          <Smile size={20} />
+        </button>
+
         <input 
           type="text" 
           className="chat-input" 
@@ -204,44 +214,43 @@ const MessageInput = ({ socket, activeChat, isGroup, activeGroup, onInitiateCall
           onKeyPress={handleKeyPress}
           disabled={isGuestInPrivate}
         />
+        
+        <input 
+          type="file" 
+          accept="image/*" 
+          style={{ display: 'none' }} 
+          ref={fileInputRef}
+          onChange={handleFileChange}
+        />
+        
+        <button 
+          type="button"
+          className="action-btn-inline" 
+          disabled={!user} 
+          onClick={handleImageClick}
+          title={!user ? "Login to send images" : "Send Image"}
+        >
+          <ImageIcon size={20} />
+        </button>
+
+        <button 
+          type="button"
+          className="action-btn-inline" 
+          disabled={!user} 
+          onClick={handleStickerClick}
+          title={!user ? "Login to send Stickers" : "Send Sticker"}
+        >
+          <Sticker size={20} />
+        </button>
       </div>
-      
-      <input 
-        type="file" 
-        accept="image/*" 
-        style={{ display: 'none' }} 
-        ref={fileInputRef}
-        onChange={handleFileChange}
-      />
-      
-      <button 
-        className="action-btn" 
-        disabled={!user} 
-        onClick={handleImageClick}
-        data-tooltip={!user ? "Login to send images" : "Send Image"}
-      >
-        <ImageIcon size={20} />
-      </button>
-      
-      <button 
-        className="action-btn" 
-        disabled={!user} 
-        onClick={handleEmojiToggle}
-        data-tooltip={!user ? "Login to send Emojis" : "Emoji"}
-      >
-        <Smile size={20} />
-      </button>
 
       <button 
-        className="action-btn" 
-        disabled={!user} 
-        onClick={handleStickerClick}
-        data-tooltip={!user ? "Login to send Stickers" : "Send Sticker"}
+        type="button"
+        className={`send-btn ${text.trim() ? 'has-text' : ''}`} 
+        onClick={handleSendText} 
+        disabled={isGuestInPrivate || !text.trim()}
+        title="Send Message"
       >
-        <Sticker size={20} />
-      </button>
-
-      <button className="send-btn" onClick={handleSendText} disabled={isGuestInPrivate}>
         <Send size={18} />
       </button>
 
@@ -260,7 +269,6 @@ const MessageInput = ({ socket, activeChat, isGroup, activeGroup, onInitiateCall
           </div>
         </div>
       )}
-
     </div>
   );
 };
