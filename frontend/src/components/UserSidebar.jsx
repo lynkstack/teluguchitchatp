@@ -40,6 +40,13 @@ const UserSidebar = ({
   const [friendRequests, setFriendRequests] = useState(user?.friendRequests || []);
   const [recentConversations, setRecentConversations] = useState({});
 
+  const checkIsUserOnline = (uId) => {
+    if (!uId) return false;
+    if (onlineUsers instanceof Set) return onlineUsers.has(uId);
+    if (Array.isArray(onlineUsers)) return onlineUsers.includes(uId);
+    return false;
+  };
+
   useEffect(() => {
     setFriendRequests(user?.friendRequests || []);
   }, [user?.friendRequests]);
@@ -380,7 +387,7 @@ const UserSidebar = ({
                 )}
                 {sortedFriends.map(u => {
                   const uId = u.id || u._id;
-                  const isOnline = onlineUsers.has(uId);
+                  const isOnline = checkIsUserOnline(uId);
                   const lastChat = recentConversations[uId];
                   const timeFormatted = lastChat?.lastMessageTime
                     ? new Date(lastChat.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -712,14 +719,14 @@ const UserSidebar = ({
             )}
             {[...filteredFriends]
               .sort((a, b) => {
-                const aOnline = onlineUsers.has(a.id || a._id);
-                const bOnline = onlineUsers.has(b.id || b._id);
+                const aOnline = checkIsUserOnline(a.id || a._id);
+                const bOnline = checkIsUserOnline(b.id || b._id);
                 if (aOnline && !bOnline) return -1;
                 if (!aOnline && bOnline) return 1;
                 return 0;
               })
               .map(u => {
-                const isOnline = onlineUsers.has(u.id || u._id);
+                const isOnline = checkIsUserOnline(u.id || u._id);
                 return (
                   <div
                     key={u.id || u._id}

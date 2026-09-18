@@ -186,22 +186,28 @@ function App() {
   // Online status tracking
   useEffect(() => {
     const handleOnlineUsers = (usersArr) => {
-      setOnlineUsers(new Set(usersArr));
+      if (Array.isArray(usersArr)) {
+        setOnlineUsers(new Set(usersArr));
+      }
     };
 
     const handleUserOnline = (userId) => {
+      if (!userId) return;
       setOnlineUsers(prev => {
-        const newSet = new Set(prev);
-        newSet.add(userId);
-        return newSet;
+        const base = (prev instanceof Set) ? prev : new Set(Array.isArray(prev) ? prev : []);
+        const next = new Set(base);
+        next.add(userId);
+        return next;
       });
     };
 
     const handleUserOffline = (userId) => {
+      if (!userId) return;
       setOnlineUsers(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(userId);
-        return newSet;
+        const base = (prev instanceof Set) ? prev : new Set(Array.isArray(prev) ? prev : []);
+        const next = new Set(base);
+        next.delete(userId);
+        return next;
       });
     };
 
@@ -226,8 +232,8 @@ function App() {
         const res = await axios.get('/api/users/online', { headers: { 'x-auth-token': token } });
         if (Array.isArray(res.data)) {
           setOnlineUsers(prev => {
-            const next = new Set([...prev, ...res.data]);
-            return next;
+            const base = (prev instanceof Set) ? Array.from(prev) : (Array.isArray(prev) ? prev : []);
+            return new Set([...base, ...res.data]);
           });
         }
       } catch (e) {

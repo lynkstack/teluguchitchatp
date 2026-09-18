@@ -239,9 +239,16 @@ const ChatBox = ({
   const activeGroup = myGroups.find(g => g.id === activeChat);
   const otherUser = users.find(u => u.id === activeChat);
   
+  const checkIsUserOnline = (uId) => {
+    if (!uId) return false;
+    if (onlineUsers instanceof Set) return onlineUsers.has(uId);
+    if (Array.isArray(onlineUsers)) return onlineUsers.includes(uId);
+    return false;
+  };
+
   // A chat is considered "online" if it's the home chat, a group chat, or if the individual user is online
-  const isOnline = activeChat === 'home' || activeGroup || (otherUser && onlineUsers.has(otherUser.id));
-  const otherIsOnline = otherUser ? onlineUsers.has(otherUser.id) : false;
+  const isOnline = activeChat === 'home' || activeGroup || (otherUser && checkIsUserOnline(otherUser.id));
+  const otherIsOnline = otherUser ? checkIsUserOnline(otherUser.id) : false;
 
   useEffect(() => {
     const joinHome = () => {
