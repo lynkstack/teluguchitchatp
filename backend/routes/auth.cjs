@@ -50,6 +50,8 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ msg: 'You must be at least 18 years old to register.' });
     }
 
+    console.log(`[AUTH-REGISTER] Attempt for email: ${cleanEmail}, username: ${finalUsername}`);
+
     // Check if user exists in public.users
     const { data: existingUsers, error: checkErr } = await supabase
       .from('users')
@@ -57,7 +59,12 @@ router.post('/register', async (req, res) => {
       .ilike('email', cleanEmail)
       .limit(1);
 
+    if (checkErr) {
+      console.error('[AUTH-REGISTER] Supabase query check error:', checkErr);
+    }
+
     if (existingUsers && existingUsers.length > 0) {
+      console.log(`[AUTH-REGISTER] Email ${cleanEmail} already exists`);
       return res.status(400).json({ msg: 'An account with this email already exists. Please log in.' });
     }
 
@@ -169,6 +176,8 @@ router.post('/login', async (req, res) => {
     const cleanPassword = String(password);
     const isEmail = cleanLoginId.includes('@');
 
+    console.log(`[AUTH-LOGIN] Attempt for loginId: "${cleanLoginId}", isEmail: ${isEmail}`);
+
     // 1. Fetch user by email or username (case-insensitive)
     let userProfile = null;
     if (isEmail) {
@@ -177,6 +186,7 @@ router.post('/login', async (req, res) => {
         .select('*')
         .ilike('email', cleanLoginId)
         .limit(1);
+      if (error) console.error('[AUTH-LOGIN] Email query error:', error);
       if (!error && data && data.length > 0) {
         userProfile = data[0];
       }
@@ -186,6 +196,7 @@ router.post('/login', async (req, res) => {
         .select('*')
         .ilike('username', cleanLoginId)
         .limit(1);
+      if (error) console.error('[AUTH-LOGIN] Username query error:', error);
       if (!error && data && data.length > 0) {
         userProfile = data[0];
       }
@@ -193,15 +204,18 @@ router.post('/login', async (req, res) => {
 
     // Fallback: search both fields if not found yet
     if (!userProfile) {
-      const { data: fallbackUsers } = await supabase
+      const { data: fallbackUsers, error: fbErr } = await supabase
         .from('users')
         .select('*')
         .or(`email.ilike.${cleanLoginId},username.ilike.${cleanLoginId}`)
         .limit(1);
+      if (fbErr) console.error('[AUTH-LOGIN] Fallback query error:', fbErr);
       if (fallbackUsers && fallbackUsers.length > 0) {
         userProfile = fallbackUsers[0];
       }
     }
+
+    console.log(`[AUTH-LOGIN] User profile lookup result: ${userProfile ? 'FOUND (id: ' + userProfile.id + ')' : 'NOT FOUND'}`);
 
     // 2. If not found in public.users, check if user exists in Supabase auth.users
     if (!userProfile && isEmail) {

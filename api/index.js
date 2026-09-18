@@ -10,6 +10,12 @@ app.use(cors({
 
 app.use(express.json());
 
+// Global Request Logger for Vercel / serverless logs
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl || req.url}`);
+  next();
+});
+
 // Load routes with explicit .cjs extensions
 const userRoute = require('../backend/routes/user.cjs');
 const authRoute = require('../backend/routes/auth.cjs');
@@ -38,13 +44,15 @@ const getHealthStatus = async () => {
 
   let dbStatus = 'testing';
   let dbError = null;
+  let userCount = 0;
   try {
-    const { data, error } = await supabase.from('users').select('id').limit(1);
+    const { data, error, count } = await supabase.from('users').select('id', { count: 'exact' }).limit(1);
     if (error) {
       dbStatus = 'error';
       dbError = error.message;
     } else {
       dbStatus = 'connected';
+      userCount = count || (data ? data.length : 0);
     }
   } catch (err) {
     dbStatus = 'exception';
@@ -58,16 +66,45 @@ const getHealthStatus = async () => {
     env: envStatus,
     database: {
       status: dbStatus,
+      userCount,
       error: dbError
     }
   };
 };
 
 app.get('/health', async (req, res) => {
-  res.json(await getHealthStatus());
+  try {
+    const result = await getHealthStatus();
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
 });
+
 app.get('/api/health', async (req, res) => {
-  res.json(await getHealthStatus());
+  try {
+    const result = await getHealthStatus();
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
+});
+
+app.get('/api/debug', async (req, res) => {
+  try {
+    const health = await getHealthStatus();
+    res.json({
+      ...health,
+      nodeVersion: process.version,
+      vercelEnv: process.env.VERCEL_ENV || 'local',
+      headers: {
+        host: req.headers.host,
+        userAgent: req.headers['user-agent']
+      }
+    });
+  } catch (e) {
+    res.status(500).json({ status: 'error', message: e.message });
+  }
 });
 
 // Mount routes with /api prefix
