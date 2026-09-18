@@ -2388,19 +2388,50 @@ select.form-control { cursor: pointer; }
     z-index: 50 !important;
   }
 
-  /* Mobile Chat Container */
-  .chat-box {
+  /* Hide global app-header on mobile when in active chat so chat-header stays pinned at top */
+  .app-container.in-chat .app-header {
+    display: none !important;
+  }
+
+  .chat-wrapper {
     width: 100vw !important;
     height: 100dvh !important;
     max-height: 100dvh !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 40 !important;
     display: flex !important;
     flex-direction: column !important;
+    background: var(--chat-bg) !important;
+  }
+
+  /* Mobile Chat Container */
+  .chat-box, .chat-container {
+    width: 100vw !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
   }
 
   .chat-header {
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 100 !important;
+    flex-shrink: 0 !important;
     padding: 10px 14px !important;
     height: auto !important;
-    min-height: 56px !important;
+    min-height: 58px !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid var(--neutral-100) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  .chat-header-btn {
+    color: var(--neutral-700) !important;
   }
 
   .chat-header h2 {
@@ -2415,12 +2446,14 @@ select.form-control { cursor: pointer; }
     width: 36px !important;
     height: 36px !important;
     padding: 0 !important;
+    color: #475569 !important;
   }
 
   /* Chat Messages Area on Mobile */
   .messages-container {
     padding: 12px 10px !important;
-    flex: 1 !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
   }

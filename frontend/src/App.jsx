@@ -571,7 +571,7 @@ function App() {
   return (
     <AuthContext.Provider value={{ user, token, login, logout, setUser }}>
       <LanguageProvider>
-        <div className="app-container">
+        <div className={`app-container ${activeChat ? 'in-chat' : ''}`}>
           <header className="app-header">
             <div className="brand">Chit Chat Telugu</div>
             <div className="auth-buttons">
