@@ -472,6 +472,13 @@ router.delete('/me', verifyToken, async (req, res) => {
       console.warn('Supabase Auth user delete error:', authDelErr);
     }
 
+    res.json({ msg: 'Account deleted successfully' });
+  } catch (err) {
+    console.error('Account Delete Error:', err);
+    res.status(500).json({ msg: 'Server error deleting account' });
+  }
+});
+
 // Active users heartbeat map
 const activeHeartbeats = new Map();
 
