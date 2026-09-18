@@ -236,8 +236,8 @@ const ChatBox = ({
 
   // Get the other user's info when in private chat
   const isStrangerChat = activeChat ? activeChat.startsWith('stranger_') : false;
-  const activeGroup = myGroups.find(g => g.id === activeChat);
-  const otherUser = users.find(u => u.id === activeChat);
+  const activeGroup = (Array.isArray(myGroups) ? myGroups : []).find(g => g.id === activeChat);
+  const otherUser = (Array.isArray(users) ? users : []).find(u => u.id === activeChat);
   
   const checkIsUserOnline = (uId) => {
     if (!uId) return false;
@@ -1041,7 +1041,7 @@ const ChatBox = ({
           onClose={() => setForwardMsg(null)}
           onSend={(selectedIds) => {
             selectedIds.forEach(targetId => {
-              const isTargetGroup = myGroups.some(g => g.id === targetId);
+              const isTargetGroup = (Array.isArray(myGroups) ? myGroups : []).some(g => g.id === targetId);
               const baseData = {
                 sender: user ? user.username : 'Guest',
                 senderId: user ? user.id : null,

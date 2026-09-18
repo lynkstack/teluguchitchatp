@@ -23,8 +23,8 @@ class ErrorBoundary extends Component {
 
   handleReload = () => {
     try {
-      localStorage.removeItem('user');
-      localStorage.removeItem('appSettings_notifications');
+      localStorage.clear();
+      sessionStorage.clear();
     } catch(e) {}
     window.location.reload(true);
   };
@@ -59,6 +59,23 @@ class ErrorBoundary extends Component {
             <p style={{ color: '#94a3b8', fontSize: '0.92rem', lineHeight: '1.5', margin: '0 0 20px 0' }}>
               The application encountered a temporary display issue. Tap below to refresh and load the latest version.
             </p>
+            {this.state.error && (
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '12px',
+                padding: '10px 14px',
+                color: '#fca5a5',
+                fontSize: '0.8rem',
+                textAlign: 'left',
+                marginBottom: '20px',
+                maxHeight: '100px',
+                overflowY: 'auto',
+                wordBreak: 'break-all'
+              }}>
+                {this.state.error.message || String(this.state.error)}
+              </div>
+            )}
             <button
               onClick={this.handleReload}
               style={{

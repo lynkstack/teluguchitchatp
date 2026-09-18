@@ -141,21 +141,45 @@ function App() {
       axios.get('/api/users', {
         headers: { 'x-auth-token': token }
       }).then(res => {
-        setUsers(res.data);
-      }).catch(err => console.error(err));
+        setUsers(Array.isArray(res.data) ? res.data : []);
+      }).catch(err => {
+        console.error('Error fetching users:', err);
+        setUsers([]);
+      });
 
       // Fetch current user with populated friends and requests
       axios.get('/api/users/me', {
         headers: { 'x-auth-token': token }
       }).then(res => {
-        setUser(res.data);
-        localStorage.setItem('user', JSON.stringify(res.data));
-      }).catch(err => console.error(err));
+        if (res.data && res.data.id && res.data.username) {
+          setUser(res.data);
+          localStorage.setItem('user', JSON.stringify(res.data));
+        } else {
+          // Token expired or invalid
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      }).catch(err => {
+        console.error('Error fetching user profile:', err);
+        if (err.response?.status === 401) {
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
+      });
 
       // Fetch user's groups
       axios.get('/api/groups/my-groups', {
         headers: { 'x-auth-token': token }
-      }).then(res => setMyGroups(res.data)).catch(console.error);
+      }).then(res => {
+        setMyGroups(Array.isArray(res.data) ? res.data : []);
+      }).catch(err => {
+        console.error('Error fetching groups:', err);
+        setMyGroups([]);
+      });
 
     } else {
       setUsers([]);

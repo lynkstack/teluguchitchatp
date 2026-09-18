@@ -447,10 +447,10 @@ const UserSidebar = ({
               </div>
             )}
 
-            {user && search && myGroups.filter(g => (g.name || '').toLowerCase().includes(search.toLowerCase())).length > 0 && (
+            {user && search && (Array.isArray(myGroups) ? myGroups : []).filter(g => (g.name || '').toLowerCase().includes(search.toLowerCase())).length > 0 && (
               <>
                 <div className="sidebar-section-label" style={{ marginTop: '16px' }}>Matching Groups</div>
-                {myGroups
+                {(Array.isArray(myGroups) ? myGroups : [])
                   .filter(g => (g.name || '').toLowerCase().includes(search.toLowerCase()))
                   .map(group => {
                     const hasActiveCall = activeGroupCalls[group.id]?.isActive;
@@ -539,12 +539,12 @@ const UserSidebar = ({
               </button>
             )}
             
-            {myGroups.filter(g => (g.name || '').toLowerCase().includes(search.toLowerCase()) || (g.description || '').toLowerCase().includes(search.toLowerCase())).length === 0 ? (
+            {(Array.isArray(myGroups) ? myGroups : []).filter(g => (g.name || '').toLowerCase().includes(search.toLowerCase()) || (g.description || '').toLowerCase().includes(search.toLowerCase())).length === 0 ? (
               <div className="no-users">
                 {search ? `No groups matching "${search}"` : 'No groups found'}
               </div>
             ) : (
-              myGroups
+              (Array.isArray(myGroups) ? myGroups : [])
                 .filter(g => (g.name || '').toLowerCase().includes(search.toLowerCase()) || (g.description || '').toLowerCase().includes(search.toLowerCase()))
                 .map(group => {
                   const hasActiveCall = activeGroupCalls[group.id]?.isActive;
